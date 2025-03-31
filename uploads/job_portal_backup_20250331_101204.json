@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "site": "사람인",
+    "company_name": "테스트 회사 1",
+    "title": "백엔드 개발자 채용",
+    "url": "https://www.saramin.co.kr/job/1",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 2,
+    "site": "잡플래닛",
+    "company_name": "테스트 회사 2",
+    "title": "프론트엔드 개발자 채용",
+    "url": "https://www.jobplanet.co.kr/job/2",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 3,
+    "site": "인크루트",
+    "company_name": "테스트 회사 3",
+    "title": "풀스택 개발자 채용",
+    "url": "https://www.incruit.com/job/3",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 4,
+    "site": "JobKorea",
+    "company_name": "㈜아크릴",
+    "title": "[제이시스메디칼] 각 부문별 신입/경력 채용",
+    "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/46631852?rPageCode=SL&logpath=21&sn=6",
+    "applied": false,
+    "created_at": "2025-03-31 00:49:16"
+  }
+]

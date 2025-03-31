@@ -1,0 +1,95 @@
+/* 메인 스타일 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* 카드 스타일 */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 15px 20px;
+}
+
+/* 테이블 스타일 */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.job-title {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.job-title:hover {
+    text-decoration: underline;
+}
+
+/* 토글 스위치 스타일 */
+.form-switch .form-check-input {
+    cursor: pointer;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* 로딩 인디케이터 */
+#loadingIndicator {
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .card-header div {
+        margin-top: 10px;
+    }
+}
