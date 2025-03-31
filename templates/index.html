@@ -67,21 +67,18 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <form action="/backup" method="post">
                                     <button type="submit" class="btn btn-info w-100">데이터 백업</button>
                                 </form>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <form action="/restore" method="post" enctype="multipart/form-data">
                                     <div class="input-group">
                                         <input type="file" class="form-control" id="backup_file" name="backup_file" accept=".json">
                                         <button type="submit" class="btn btn-warning">데이터 복원</button>
                                     </div>
                                 </form>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="/download_project" class="btn btn-danger w-100">프로젝트 ZIP 다운로드</a>
                             </div>
                         </div>
                     </div>
@@ -108,7 +105,7 @@
                         </thead>
                         <tbody id="jobsTableBody">
                             {% for job in jobs %}
-                            <tr data-id="{{ job.id }}">
+                            <tr data-job-id="{{ job.id }}">
                                 <td>{{ job.site }}</td>
                                 <td>{{ job.company_name }}</td>
                                 <td><a href="{{ job.url }}" target="_blank">{{ job.title }}</a></td>

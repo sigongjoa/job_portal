@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "site": "사람인",
+    "company_name": "테스트 회사 1",
+    "title": "백엔드 개발자 채용",
+    "url": "https://www.saramin.co.kr/job/1",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 2,
+    "site": "잡플래닛",
+    "company_name": "테스트 회사 2",
+    "title": "프론트엔드 개발자 채용",
+    "url": "https://www.jobplanet.co.kr/job/2",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 3,
+    "site": "인크루트",
+    "company_name": "테스트 회사 3",
+    "title": "풀스택 개발자 채용",
+    "url": "https://www.incruit.com/job/3",
+    "applied": true,
+    "created_at": "2025-03-28 05:26:58"
+  },
+  {
+    "id": 4,
+    "site": "JobKorea",
+    "company_name": "㈜아크릴",
+    "title": "[제이시스메디칼] 각 부문별 신입/경력 채용",
+    "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/46631852?rPageCode=SL&logpath=21&sn=6",
+    "applied": false,
+    "created_at": "2025-03-31 00:49:16"
+  },
+  {
+    "id": 5,
+    "site": "JobKorea",
+    "company_name": "㈜쓰리뷰",
+    "title": "2025년 CNPS 웹 개발자 / KLPGA 공식 기록수집 운영팀 (현장업무) / 방송 송출 프로그램 개발자 채용",
+    "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/46597602?rPageCode=SL&logpath=21&sn=6",
+    "applied": false,
+    "created_at": "2025-03-31 01:39:07"
+  },
+  {
+    "id": 6,
+    "site": "JobKorea",
+    "company_name": "㈜자이언트스텝",
+    "title": "2025년 신입/경력 모집공고",
+    "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/46584747?rPageCode=SL&logpath=21&sn=6",
+    "applied": false,
+    "created_at": "2025-03-31 01:49:48"
+  },
+  {
+    "id": 7,
+    "site": "JobKorea",
+    "company_name": "㈜알엠에쓰플렛폼",
+    "title": "[교육지대] 비지니스 데이터 분석가 채용(경력직)",
+    "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/46586862?rPageCode=SL&logpath=21&sn=6",
+    "applied": false,
+    "created_at": "2025-03-31 01:55:15"
+  },
+  {
+    "id": 8,
+    "site": "테스트_구직회사",
+    "company_name": "아니",
+    "title": "그런거 없다",
+    "url": "https://www.wanted.co.kr/wd/189274",
+    "applied": false,
+    "created_at": "2025-03-31 02:11:49"
+  }
+]
