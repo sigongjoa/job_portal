@@ -30,8 +30,11 @@ class Job(db.Model):
     company_name = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(300), nullable=False)
     url = db.Column(db.String(500), nullable=False)
-    applied = db.Column(db.Boolean, default=False)
+    # applied 필드를 status 필드로 대체
+    status = db.Column(db.String(20), default='미지원')  # '미지원', '지원', '보류' 중 하나
+    note = db.Column(db.Text, nullable=True)  # 메모 저장을 위한 필드
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    applied = db.Column(db.Boolean, default=False)
     
     def to_dict(self):
         return {
@@ -40,9 +43,55 @@ class Job(db.Model):
             'company_name': self.company_name,
             'title': self.title,
             'url': self.url,
-            'applied': self.applied,
+            'status': self.status,
+            'note': self.note,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
         }
+
+
+def migrate_db():
+    """기존 데이터를 새 스키마로 마이그레이션"""
+    with app.app_context():
+        # 새 컬럼이 있는지 확인
+        inspector = db.inspect(db.engine)
+        has_status = 'status' in [col['name'] for col in inspector.get_columns('job')]
+        has_note = 'note' in [col['name'] for col in inspector.get_columns('job')]
+        
+        # 새 컬럼이 없으면 추가
+        if not has_status or not has_note:
+            # 임시 테이블에 기존 데이터 저장
+            jobs_data = []
+            for job in Job.query.all():
+                jobs_data.append({
+                    'id': job.id,
+                    'site': job.site,
+                    'company_name': job.company_name,
+                    'title': job.title,
+                    'url': job.url,
+                    'applied': job.applied,
+                    'created_at': job.created_at
+                })
+            
+            # 테이블 스키마 업데이트
+            db.drop_all()
+            db.create_all()
+            
+            # 데이터 복원 및 status 필드 설정
+            for data in jobs_data:
+                status = '지원' if data.pop('applied', False) else '미지원'
+                new_job = Job(
+                    id=data['id'],
+                    site=data['site'],
+                    company_name=data['company_name'],
+                    title=data['title'],
+                    url=data['url'],
+                    status=status,
+                    created_at=data['created_at']
+                )
+                db.session.add(new_job)
+            
+            db.session.commit()
+            print("데이터베이스 마이그레이션이 완료되었습니다.")
 
 # 크롤러 통합
 def get_crawler(url):
@@ -282,11 +331,6 @@ def toggle_applied(job_id):
     db.session.commit()
     return jsonify({"success": True, "applied": job.applied})
 
-@app.route('/jobs', methods=['GET'])
-def get_jobs():
-    """모든 채용 정보 반환 API"""
-    jobs = Job.query.order_by(Job.created_at.desc()).all()
-    return jsonify([job.to_dict() for job in jobs])
 
 @app.route('/delete_job/<int:job_id>', methods=['POST'])
 def delete_job(job_id):
@@ -332,9 +376,54 @@ def add_test_data():
         db.session.commit()
         print("테스트 데이터가 추가되었습니다.")
 
-# 애플리케이션 실행
+@app.route('/update_job_status/<int:job_id>', methods=['POST'])
+def update_job_status(job_id):
+    """채용 정보 상태 및 메모 업데이트 API"""
+    try:
+        data = request.json
+        job = Job.query.get_or_404(job_id)
+        
+        # 상태 업데이트
+        if 'status' in data:
+            job.status = data['status']
+        
+        # 메모 업데이트 (있는 경우에만)
+        if 'note' in data:
+            job.note = data['note']
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True, 
+            "status": job.status,
+            "note": job.note
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+@app.route('/get_job_note/<int:job_id>', methods=['GET'])
+def get_job_note(job_id):
+    """채용 정보 메모 조회 API"""
+    try:
+        job = Job.query.get_or_404(job_id)
+        return jsonify({
+            "success": True,
+            "note": job.note
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# 기존 get_jobs 라우트 업데이트
+@app.route('/jobs', methods=['GET'])
+def get_jobs():
+    """모든 채용 정보 반환 API"""
+    jobs = Job.query.order_by(Job.created_at.desc()).all()
+    return jsonify([job.to_dict() for job in jobs])
+
+# app.py 실행 부분 수정 (마이그레이션 실행)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        migrate_db()  # 마이그레이션 함수 호출
         add_test_data()  # 테스트 데이터 추가
     app.run(host='0.0.0.0', port=5000, debug=True)

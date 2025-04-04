@@ -1,11 +1,18 @@
-// 메인 JavaScript 파일
+// main.js 파일 업데이트
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 요소 참조
+    // 기존 요소 참조
     const crawlForm = document.getElementById('crawlForm');
     const crawlBtn = document.getElementById('crawlBtn');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const jobsTableBody = document.getElementById('jobsTableBody');
     const refreshBtn = document.getElementById('refreshBtn');
+
+    // 새 요소 참조
+    const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+    const noteJobId = document.getElementById('noteJobId');
+    const noteText = document.getElementById('noteText');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
 
     // 크롤링 폼 제출 처리
     if (crawlForm) {
@@ -26,41 +33,104 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 지원 상태 토글 처리
-    document.querySelectorAll('.toggle-applied').forEach(function(toggle) {
-        toggle.addEventListener('change', function() {
-            const jobId = this.closest('tr').dataset.jobId;
-            const label = this.nextElementSibling;
-            const isApplied = this.checked;
+    // 상태 변경 이벤트 처리
+    document.querySelectorAll('.job-status-select').forEach(function(select) {
+        select.addEventListener('change', function() {
+            const jobId = this.dataset.jobId;
+            const status = this.value;
             
-            // 라벨 텍스트 업데이트
-            label.textContent = isApplied ? '지원' : '미지원';
-            
-            // 서버에 상태 업데이트 요청
-            fetch(`/toggle_applied/${jobId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    // 실패 시 상태 되돌리기
-                    this.checked = !isApplied;
-                    label.textContent = !isApplied ? '지원' : '미지원';
-                    alert('상태 업데이트에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // 오류 시 상태 되돌리기
-                this.checked = !isApplied;
-                label.textContent = !isApplied ? '지원' : '미지원';
-                alert('상태 업데이트 중 오류가 발생했습니다.');
-            });
+            // 보류 상태를 선택한 경우 메모 모달 표시
+            if (status === '보류') {
+                // 현재 메모 가져오기
+                fetch(`/get_job_note/${jobId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        noteJobId.value = jobId;
+                        noteText.value = data.note || '';
+                        noteModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('메모를 가져오는 중 오류가 발생했습니다.');
+                    });
+            } else {
+                // 보류가 아닌 상태로 변경 시 바로 상태 업데이트
+                updateJobStatus(jobId, status);
+            }
         });
     });
+
+    // 메모 버튼 클릭 이벤트
+    document.querySelectorAll('.note-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const jobId = this.dataset.jobId;
+            
+            // 메모 가져오기
+            fetch(`/get_job_note/${jobId}`)
+                .then(response => response.json())
+                .then(data => {
+                    noteJobId.value = jobId;
+                    noteText.value = data.note || '';
+                    noteModal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('메모를 가져오는 중 오류가 발생했습니다.');
+                });
+        });
+    });
+
+    // 메모 저장 버튼 클릭 이벤트
+    saveNoteBtn.addEventListener('click', function() {
+        const jobId = noteJobId.value;
+        const note = noteText.value;
+        const status = document.querySelector(`.job-status-select[data-job-id="${jobId}"]`).value;
+        
+        // 상태와 메모 업데이트
+        updateJobStatus(jobId, status, note);
+        
+        // 모달 닫기
+        noteModal.hide();
+    });
+
+    // 상태 및 메모 업데이트 함수
+    function updateJobStatus(jobId, status, note = null) {
+        const data = { status: status };
+        if (note !== null) {
+            data.note = note;
+        }
+        
+        fetch(`/update_job_status/${jobId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 메모 버튼 표시 업데이트
+                const noteBtn = document.querySelector(`.note-btn[data-job-id="${jobId}"]`);
+                if (noteBtn) {
+                    if (data.note) {
+                        noteBtn.style.display = 'block';
+                    } else {
+                        noteBtn.style.display = 'none';
+                    }
+                }
+            } else {
+                alert('상태 업데이트에 실패했습니다.');
+                // 실패 시 상태 선택을 원래대로 되돌리기
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('상태 업데이트 중 오류가 발생했습니다.');
+            location.reload();
+        });
+    }
 
     // 채용 정보 삭제 처리
     document.querySelectorAll('.delete-job').forEach(function(button) {

@@ -93,3 +93,41 @@ body {
         margin-top: 10px;
     }
 }
+/* 메모 버튼 스타일 */
+.note-btn {
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-btn i {
+    font-size: 16px;
+}
+
+/* 상태에 따른 색상 지정 */
+.status-applied {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.status-pending {
+    color: #fd7e14;
+    font-weight: 500;
+}
+
+.status-not-applied {
+    color: #6c757d;
+}
+
+/* 메모 모달 스타일 */
+#noteText {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* 메모 버튼에 호버 효과 */
+.note-btn:hover {
+    background-color: #17a2b8;
+    color: white;
+}
