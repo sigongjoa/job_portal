@@ -93,6 +93,7 @@ body {
         margin-top: 10px;
     }
 }
+
 /* 메모 버튼 스타일 */
 .note-btn {
     padding: 0.25rem 0.5rem;
@@ -121,7 +122,7 @@ body {
 }
 
 /* 메모 모달 스타일 */
-#noteText {
+#noteText, #editNoteText {
     resize: vertical;
     min-height: 120px;
 }
@@ -130,4 +131,126 @@ body {
 .note-btn:hover {
     background-color: #17a2b8;
     color: white;
+}
+
+/* 상세 페이지 스타일 */
+.job-detail-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.job-detail-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.job-detail-company {
+    font-size: 18px;
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.job-detail-badge {
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* 자소서 섹션 스타일 */
+.resume-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.resume-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* 마감일 표시 스타일 */
+.deadline-badge {
+    font-size: 12px;
+    padding: 5px 8px;
+}
+
+.deadline-approaching {
+    background-color: #dc3545;
+    color: white;
+}
+
+.deadline-expired {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* 지원 상태 스타일 */
+.status-selector {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    background-color: white;
+    font-weight: 500;
+}
+
+.status-미지원 {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.status-지원 {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.status-서류합격 {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-1차면접, .status-2차면접 {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-최종합격 {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-불합격 {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-보류 {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* 파일 업로드 영역 스타일 */
+.file-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area:hover {
+    border-color: #adb5bd;
+    background-color: #f8f9fa;
+}
+
+/* nl2br 필터 대체 스타일 */
+.nl2br {
+    white-space: pre-wrap;
 }

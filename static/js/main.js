@@ -1,6 +1,10 @@
 // main.js 파일 업데이트
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 페이지 로드 시 상태 스타일 적용
+    document.querySelectorAll('.job-status-select').forEach(function(select) {
+        updateStatusStyles(select);
+    });
     // 기존 요소 참조
     const crawlForm = document.getElementById('crawlForm');
     const crawlBtn = document.getElementById('crawlBtn');
@@ -81,17 +85,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 메모 저장 버튼 클릭 이벤트
-    saveNoteBtn.addEventListener('click', function() {
-        const jobId = noteJobId.value;
-        const note = noteText.value;
-        const status = document.querySelector(`.job-status-select[data-job-id="${jobId}"]`).value;
-        
-        // 상태와 메모 업데이트
-        updateJobStatus(jobId, status, note);
-        
-        // 모달 닫기
-        noteModal.hide();
-    });
+    if (saveNoteBtn) {
+        saveNoteBtn.addEventListener('click', function() {
+            const jobId = noteJobId.value;
+            const note = noteText.value;
+            const status = document.querySelector(`.job-status-select[data-job-id="${jobId}"]`).value;
+            
+            // 상태와 메모 업데이트
+            updateJobStatus(jobId, status, note);
+            
+            // 모달 닫기
+            noteModal.hide();
+        });
+    }
 
     // 상태 및 메모 업데이트 함수
     function updateJobStatus(jobId, status, note = null) {
@@ -119,6 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         noteBtn.style.display = 'none';
                     }
                 }
+                
+                // 상태 스타일 업데이트
+                const statusSelect = document.querySelector(`.job-status-select[data-job-id="${jobId}"]`);
+                if (statusSelect) {
+                    updateStatusStyles(statusSelect);
+                }
             } else {
                 alert('상태 업데이트에 실패했습니다.');
                 // 실패 시 상태 선택을 원래대로 되돌리기
@@ -131,53 +143,26 @@ document.addEventListener('DOMContentLoaded', function() {
             location.reload();
         });
     }
-
-    // 채용 정보 삭제 처리
-    document.querySelectorAll('.delete-job').forEach(function(button) {
-        button.addEventListener('click', function() {
-            if (confirm('이 채용 정보를 삭제하시겠습니까?')) {
-                const row = this.closest('tr');
-                const jobId = row.dataset.jobId;
-                
-                // 서버에 삭제 요청
-                fetch(`/delete_job/${jobId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // 성공 시 행 제거
-                        row.remove();
-                        
-                        // 테이블이 비었는지 확인
-                        if (jobsTableBody.children.length === 0) {
-                            const emptyRow = document.createElement('tr');
-                            emptyRow.innerHTML = '<td colspan="5" class="text-center">채용 정보가 없습니다. 구직 사이트 URL을 입력하여 크롤링을 시작하세요.</td>';
-                            jobsTableBody.appendChild(emptyRow);
-                        }
-                    } else {
-                        alert('삭제에 실패했습니다.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('삭제 중 오류가 발생했습니다.');
-                });
-            }
-        });
-    });
-
-    // 테이블 행 호버 효과
-    document.querySelectorAll('#jobsTableBody tr').forEach(function(row) {
-        row.addEventListener('mouseenter', function() {
-            this.classList.add('table-active');
-        });
+    
+    // 상태에 따른 스타일 업데이트 함수
+    function updateStatusStyles(selectElement) {
+        const status = selectElement.value;
+        const row = selectElement.closest('tr');
         
-        row.addEventListener('mouseleave', function() {
-            this.classList.remove('table-active');
-        });
-    });
-});
+        // 모든 상태 클래스 제거
+        row.classList.remove('table-success', 'table-info', 'table-warning', 'table-danger', 'table-secondary');
+        
+        // 상태에 따라 적절한 클래스 추가
+        if (status === '최종합격') {
+            row.classList.add('table-success');
+        } else if (status === '서류합격') {
+            row.classList.add('table-info');
+        } else if (status === '1차면접' || status === '2차면접') {
+            row.classList.add('table-warning');
+        } else if (status === '불합격') {
+            row.classList.add('table-danger');
+        } else if (status === '미지원') {
+            row.classList.add('table-secondary');
+        }
+    }
+}); 

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ job.company_name }} - {{ job.title }} | 구직 정보 관리 시스템</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">채용 정보 상세</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+            </a>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>기본 정보</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <strong>회사명:</strong> {{ job.company_name }}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>채용공고:</strong> <a href="{{ job.url }}" target="_blank">{{ job.title }}</a>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>구직사이트:</strong> {{ job.site }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <strong>현재 상태:</strong> 
+                                    <span class="badge {% if job.status == '미지원' %}bg-secondary{% elif job.status == '지원' %}bg-primary{% elif job.status == '서류합격' %}bg-info{% elif job.status == '1차면접' or job.status == '2차면접' %}bg-warning{% elif job.status == '최종합격' %}bg-success{% elif job.status == '불합격' %}bg-danger{% else %}bg-dark{% endif %}">{{ job.status }}</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>마감일:</strong> 
+                                    {% if job.deadline %}
+                                        {{ job.deadline.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        미설정
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>지원일:</strong> 
+                                    {% if job.application_date %}
+                                        {{ job.application_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        미지원
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <strong>메모:</strong>
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        {% if job.note %}
+                                            <p class="mb-0">{{ job.note | nl2br }}</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">등록된 메모가 없습니다.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>지원 자료 관리</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="materialsForm" action="{{ url_for('upload_job_materials', job_id=job.id) }}" method="post" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="application_date" class="form-label">지원 날짜</label>
+                                        <input type="date" class="form-control" id="application_date" name="application_date" value="{% if job.application_date %}{{ job.application_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">지원 상태 업데이트</label>
+                                        <select class="form-select" id="status" name="status">
+                                            <option value="미지원" {% if job.status == '미지원' %}selected{% endif %}>미지원</option>
+                                            <option value="지원" {% if job.status == '지원' %}selected{% endif %}>지원</option>
+                                            <option value="서류합격" {% if job.status == '서류합격' %}selected{% endif %}>서류합격</option>
+                                            <option value="1차면접" {% if job.status == '1차면접' %}selected{% endif %}>1차면접</option>
+                                            <option value="2차면접" {% if job.status == '2차면접' %}selected{% endif %}>2차면접</option>
+                                            <option value="최종합격" {% if job.status == '최종합격' %}selected{% endif %}>최종합격</option>
+                                            <option value="불합격" {% if job.status == '불합격' %}selected{% endif %}>불합격</option>
+                                            <option value="보류" {% if job.status == '보류' %}selected{% endif %}>보류</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="resume_text" class="form-label">자기소개서 내용</label>
+                                <textarea class="form-control" id="resume_text" name="resume_text" rows="10">{{ job.resume }}</textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="resume_file" class="form-label">자기소개서 파일</label>
+                                        <input type="file" class="form-control" id="resume_file" name="resume_file">
+                                        {% if job.resume_file %}
+                                            <div class="mt-2">
+                                                <a href="{{ url_for('download_file', job_id=job.id, file_type='resume') }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-file-earmark-text"></i> 기존 파일 다운로드
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="portfolio_file" class="form-label">포트폴리오 파일</label>
+                                        <input type="file" class="form-control" id="portfolio_file" name="portfolio_file">
+                                        {% if job.portfolio_file %}
+                                            <div class="mt-2">
+                                                <a href="{{ url_for('download_file', job_id=job.id, file_type='portfolio') }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-file-earmark-text"></i> 기존 파일 다운로드
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" id="editNoteBtn" class="btn btn-info">메모 수정</button>
+                                <button type="submit" class="btn btn-primary">저장</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 메모 편집 모달 -->
+    <div class="modal fade" id="editNoteModal" tabindex="-1" aria-labelledby="editNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editNoteModalLabel">지원 메모 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editNoteText" class="form-label">이 채용공고에 대한 메모를 입력하세요:</label>
+                        <textarea class="form-control" id="editNoteText" rows="5">{{ job.note }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="saveEditNoteBtn">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 메모 편집 모달
+            const editNoteBtn = document.getElementById('editNoteBtn');
+            const editNoteModal = new bootstrap.Modal(document.getElementById('editNoteModal'));
+            const editNoteText = document.getElementById('editNoteText');
+            const saveEditNoteBtn = document.getElementById('saveEditNoteBtn');
+            
+            // 메모 편집 버튼 클릭 시 모달 표시
+            if (editNoteBtn) {
+                editNoteBtn.addEventListener('click', function() {
+                    editNoteModal.show();
+                });
+            }
+            
+            // 메모 저장 버튼 클릭 이벤트
+            if (saveEditNoteBtn) {
+                saveEditNoteBtn.addEventListener('click', function() {
+                    const note = editNoteText.value;
+                    const job_id = {{ job.id }};
+                    
+                    // 상태 업데이트 API 호출
+                    fetch(`/update_job_status/${job_id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            note: note
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // 성공 시 페이지 새로고침
+                            location.reload();
+                        } else {
+                            alert('메모 저장에 실패했습니다.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('메모 저장 중 오류가 발생했습니다.');
+                    });
+                    
+                    editNoteModal.hide();
+                });
+            }
+            
+            // 지원 상태 변경 시 이벤트
+            const statusSelect = document.getElementById('status');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', function() {
+                    const job_id = {{ job.id }};
+                    const status = this.value;
+                    
+                    // 지원 상태가 '지원'으로 변경된 경우 자동으로 오늘 날짜를 지원 날짜로 설정
+                    if (status === '지원') {
+                        const applicationDateInput = document.getElementById('application_date');
+                        if (applicationDateInput && !applicationDateInput.value) {
+                            const today = new Date();
+                            const formattedDate = today.toISOString().split('T')[0];
+                            applicationDateInput.value = formattedDate;
+                        }
+                    }
+                });
+            }
+            
+            // 지원 자료 폼 제출 이벤트
+            const materialsForm = document.getElementById('materialsForm');
+            if (materialsForm) {
+                materialsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // 폼 데이터 수집
+                    const formData = new FormData(this);
+                    
+                    // 지원 상태 추가
+                    formData.append('status', document.getElementById('status').value);
+                    
+                    // API 호출
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // 성공 시 페이지 새로고침
+                            location.reload();
+                        } else {
+                            alert('지원 자료 저장에 실패했습니다.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('지원 자료 저장 중 오류가 발생했습니다.');
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
