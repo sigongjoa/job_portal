@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentEventId = null;
     
     // 전역 변수 jobs가 정의되었는지 확인
-    if (typeof jobs === 'undefined') {
+    if (typeof jobs === 'undefined' || jobs === null) {
         console.warn('jobs 변수가 정의되지 않았습니다.');
         // 빈 배열로 초기화
         window.jobs = [];
@@ -47,11 +47,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 이벤트 데이터 가져오기
         events: {
-            url: '/calendar/events',
+            url: '/calendar/calendar/events',
             method: 'GET',
             failure: function(error) {
                 console.error('일정 데이터 로딩 오류:', error);
-                alert('일정 데이터를 불러오는 데 실패했습니다.');
+                console.warn('등록된 일정이 없거나 데이터를 불러올 수 없습니다.');
             },
             error: function(xhr, textStatus, error) {
                 console.error('서버 응답 오류:', xhr, textStatus, error);
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch (e) {}
                 
                 // 에러 처리 후 빈 이벤트 배열 반환
-                alert(errorMsg);
+                console.warn(errorMsg);
                 return { events: [] };
             }
         },
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const eventId = document.getElementById('event-id').value;
         if (eventId) {
             // 이벤트 업데이트
-            fetch(`/calendar/events/${eventId}`, {
+            fetch(`/calendar/calendar/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // 새 이벤트 생성
-            fetch('/calendar/events', {
+            fetch('/calendar/calendar/events', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -477,8 +477,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 이벤트 삭제
     function deleteEvent(eventId) {
-        fetch(`/calendar/events/${eventId}`, {
-            method: 'DELETE'
+        fetch(`/calendar/calendar/events/${eventId}`, {
+        method: 'DELETE'
         })
         .then(response => {
             if (!response.ok) {
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Updating event dates:', eventData);
         
         // 이벤트 업데이트
-        fetch(`/calendar/events/${event.id}`, {
+        fetch(`/calendar/calendar/events/${event.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,11 +1,60 @@
 /**
  * 면접 질문 관리 모듈
  */
-document.addEventListener('DOMContentLoaded', function() {
-    // 질문 저장 버튼 클릭 시
+console.log('면접 질문 관리 모듈 초기화 시작');
+
+// 질문 삭제 함수
+function deleteQuestion(questionId) {
+    console.log(`질문 ID: ${questionId} 삭제 시도`);
+    
+    fetch(`/interview/questions/${questionId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP 오류: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('응답 데이터:', data);
+        if (data.success) {
+            // 삭제 성공 시 페이지 새로고침
+            location.reload();
+        } else {
+            alert('질문 삭제 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('질문 삭제 중 오류가 발생했습니다.');
+    });
+}
+
+// 페이지 로드되면 실행
+window.addEventListener('load', function() {
+    console.log('면접 질문 관리 모듈 - window load 이벤트 발생');
+    
+    // DOM 요소 참조 처리
+    const deleteButtons = document.querySelectorAll('.delete-question-btn');
+    const editButtons = document.querySelectorAll('.edit-question-btn');
+    const deleteQuestionBtn = document.getElementById('delete-question-btn');
+    const updateQuestionBtn = document.getElementById('update-question-btn');
     const saveQuestionBtn = document.getElementById('save-question-btn');
+    const practiceButtons = document.querySelectorAll('.practice-btn');
+    const aiFeedbackButtons = document.querySelectorAll('.ai-feedback-btn');
+
+    // 여기에 버튼 상태 확인 출력
+    console.log('삭제 버튼 개수:', deleteButtons ? deleteButtons.length : '0, 버튼이 없습니다.');
+    console.log('편집 버튼 개수:', editButtons ? editButtons.length : '0, 버튼이 없습니다.');
+    console.log('모달 삭제 버튼:', deleteQuestionBtn ? '존재함' : '없음');
+    console.log('연습하기 버튼 개수:', practiceButtons ? practiceButtons.length : '0, 버튼이 없습니다.');
+    console.log('AI 피드백 버튼 개수:', aiFeedbackButtons ? aiFeedbackButtons.length : '0, 버튼이 없습니다.');
+
+    // 질문 저장 버튼 클릭 시
     if (saveQuestionBtn) {
         saveQuestionBtn.addEventListener('click', function() {
+            console.log('질문 저장 버튼 클릭');
             document.getElementById('add-question-form').submit();
         });
     }
@@ -68,79 +117,139 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 질문 편집 버튼 클릭 시
-    const editButtons = document.querySelectorAll('.edit-question-btn');
-    editButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            const questionId = button.dataset.questionId;
-            
-            // 질문 정보 가져오기
-            fetch(`/interview/questions/${questionId}`)
-                .then(response => response.json())
-                .then(question => {
-                    // 모달에 질문 정보 채우기
-                    document.getElementById('edit-question-id').value = question.id;
-                    document.getElementById('edit-question-text').value = question.question;
-                    document.getElementById('edit-question-answer').value = question.answer || '';
-                    document.getElementById('edit-question-category').value = question.category || '일반';
-                    document.getElementById('edit-question-difficulty').value = question.difficulty || 3;
-                    document.getElementById('edit-question-job').value = question.job_id || '';
-                    
-                    // 모달 열기
-                    const modal = new bootstrap.Modal(document.getElementById('edit-question-modal'));
-                    modal.show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('질문 정보를 가져오는 중 오류가 발생했습니다.');
-                });
+    // 연습하기 버튼 클릭 시
+    if (practiceButtons && practiceButtons.length > 0) {
+        console.log('연습하기 버튼 이벤트 핸들러 등록');
+        practiceButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const questionId = this.dataset.questionId;
+                console.log('연습하기 버튼 클릭: 질문 ID =', questionId);
+                // 탭 전환
+                const simulatorTab = document.getElementById('simulator-tab');
+                if (simulatorTab) {
+                    simulatorTab.click();
+                    // 질문 로드 함수 호출 (interview-simulator.js에 정의돼 있어야 함)
+                    if (typeof loadQuestionForSimulator === 'function') {
+                        loadQuestionForSimulator(questionId);
+                    } else {
+                        console.error('질문 로드 함수가 정의되지 않았습니다.');
+                    }
+                }
+            });
         });
-    });
+    }
+    
+    // AI 피드백 버튼 클릭 시
+    if (aiFeedbackButtons && aiFeedbackButtons.length > 0) {
+        console.log('AI 피드백 버튼 이벤트 핸들러 등록');
+        aiFeedbackButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const questionId = this.dataset.questionId;
+                console.log('AI 피드백 버튼 클릭: 질문 ID =', questionId);
+                // 탭 전환
+                const aiAssistantTab = document.getElementById('ai-assistant-tab');
+                if (aiAssistantTab) {
+                    aiAssistantTab.click();
+                    // 질문 로드 함수 호출 (ai-assistant.js에 정의돼 있어야 함)
+                    if (typeof loadQuestionForAI === 'function') {
+                        loadQuestionForAI(questionId);
+                    } else {
+                        console.error('AI 질문 로드 함수가 정의되지 않았습니다.');
+                    }
+                }
+            });
+        });
+    }
+    
+    // 질문 편집 버튼 클릭 시
+    if (editButtons && editButtons.length > 0) {
+        console.log('편집 버튼 이벤트 핸들러 등록:', editButtons.length);
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const questionId = this.dataset.questionId;
+                if (!questionId) {
+                    console.error('질문 ID가 없습니다:', button);
+                    return;
+                }
+                
+                console.log('질문 편집 시도:', questionId);
+                
+                // 질문 정보 가져오기
+                fetch(`/interview/questions/${questionId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP 오류: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(question => {
+                        if (!question) {
+                            throw new Error('질문 데이터가 없습니다.');
+                        }
+                        
+                        console.log('받은 질문 데이터:', question);
+                        
+                        // 모달에 질문 정보 채우기
+                        document.getElementById('edit-question-id').value = question.id;
+                        document.getElementById('edit-question-text').value = question.question;
+                        document.getElementById('edit-question-answer').value = question.answer || '';
+                        document.getElementById('edit-question-category').value = question.category || '일반';
+                        document.getElementById('edit-question-difficulty').value = question.difficulty || 3;
+                        document.getElementById('edit-question-job').value = question.job_id || '';
+                        
+                        // 모달 열기
+                        const modal = new bootstrap.Modal(document.getElementById('edit-question-modal'));
+                        modal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('질문 정보를 가져오는 중 오류가 발생했습니다.');
+                    });
+            });
+        });
+    } else {
+        console.warn('편집 버튼을 찾을 수 없습니다.');
+    }
     
     // 질문 삭제 버튼 클릭 시 (모달 내부)
-    const deleteQuestionBtn = document.getElementById('delete-question-btn');
     if (deleteQuestionBtn) {
-        deleteQuestionBtn.addEventListener('click', function() {
+        deleteQuestionBtn.addEventListener('click', function(event) {
+            event.preventDefault();
             const questionId = document.getElementById('edit-question-id').value;
             if (questionId && confirm('이 질문을 정말 삭제하시겠습니까?')) {
+                console.log('모달에서 질문 삭제 시도:', questionId);
                 deleteQuestion(questionId);
             }
         });
+    } else {
+        console.warn('모달의 삭제 버튼을 찾을 수 없습니다.');
     }
     
     // 질문 삭제 버튼 클릭 시 (카드 내부)
-    const deleteButtons = document.querySelectorAll('.delete-question-btn');
-    deleteButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            const questionId = button.dataset.questionId;
-            if (questionId && confirm('이 질문을 정말 삭제하시겠습니까?')) {
-                deleteQuestion(questionId);
-            }
+    if (deleteButtons && deleteButtons.length > 0) {
+        console.log('삭제 버튼 이벤트 핸들러 등록:', deleteButtons.length);
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const questionId = this.dataset.questionId;
+                if (questionId && confirm('이 질문을 정말 삭제하시겠습니까?')) {
+                    console.log('질문 삭제 시도:', questionId);
+                    deleteQuestion(questionId);
+                }
+            });
         });
-    });
-    
-    // 질문 삭제 함수
-    function deleteQuestion(questionId) {
-        fetch(`/interview/questions/${questionId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 삭제 성공 시 페이지 새로고침
-                location.reload();
-            } else {
-                alert('질문 삭제 실패: ' + (data.error || '알 수 없는 오류'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('질문 삭제 중 오류가 발생했습니다.');
-        });
+    } else {
+        console.warn('삭제 버튼을 찾을 수 없습니다.');
     }
     
     // 질문 업데이트 버튼 클릭 시
-    const updateQuestionBtn = document.getElementById('update-question-btn');
     if (updateQuestionBtn) {
         updateQuestionBtn.addEventListener('click', function() {
             const questionId = document.getElementById('edit-question-id').value;
@@ -152,6 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 job_id: document.getElementById('edit-question-job').value || null
             };
             
+            console.log('질문 업데이트 시도:', questionId, questionData);
+            
             fetch(`/interview/questions/${questionId}`, {
                 method: 'PUT',
                 headers: {
@@ -159,7 +270,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(questionData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // 업데이트 성공 시 페이지 새로고침
@@ -173,5 +289,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('질문 업데이트 중 오류가 발생했습니다.');
             });
         });
+    } else {
+        console.warn('업데이트 버튼을 찾을 수 없습니다.');
     }
+    
+    // 이벤트 핸들러 추가 완료 로그
+    console.log('면접 질문 관리 모듈 - 이벤트 핸들러 등록 완료');
 });
+
+// 초기화 완료 로그
+console.log('면접 질문 관리 모듈 초기화 완료');

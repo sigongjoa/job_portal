@@ -220,7 +220,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/locales/ko.js"></script>
 <script>
     // 전역 변수로 채용 정보 데이터 선언
-    window.jobs = {{ jobs|tojson|safe }};
+    window.jobs = {{ jobs|default([])|tojson|safe }};
     
     // jobs 가 정의되지 않는 경우 안전하게 처리
     if (typeof window.jobs !== 'object' || window.jobs === null) {
