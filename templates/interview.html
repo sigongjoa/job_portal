@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}면접 준비 - 구직 정보 관리 시스템{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>
+            면접 준비
+            {% if job %}
+            <small class="text-muted">- {{ job.company_name }}: {{ job.title }}</small>
+            {% endif %}
+        </h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-question-modal">
+            <i class="bi bi-plus-circle"></i> 질문 추가
+        </button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+            <i class="bi bi-house"></i> 홈으로
+        </a>
+    </div>
+</div>
+
+<!-- 탭 네비게이션 -->
+<ul class="nav nav-tabs" id="interviewTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button" role="tab" aria-controls="questions" aria-selected="true">질문 관리</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="simulator-tab" data-bs-toggle="tab" data-bs-target="#simulator" type="button" role="tab" aria-controls="simulator" aria-selected="false">모의 면접</button>
+    </li>
+    {% if mcp_enabled %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="ai-assistant-tab" data-bs-toggle="tab" data-bs-target="#ai-assistant" type="button" role="tab" aria-controls="ai-assistant" aria-selected="false">AI 면접 도우미</button>
+    </li>
+    {% endif %}
+</ul>
+
+<div class="tab-content" id="interviewTabsContent">
+    <!-- 질문 관리 탭 -->
+    {% include 'partials/interview_questions.html' %}
+    
+    <!-- 모의 면접 탭 -->
+    {% include 'partials/interview_simulator.html' %}
+    
+    <!-- AI 면접 도우미 탭 -->
+    {% if mcp_enabled %}
+    {% include 'partials/interview_ai_assistant.html' %}
+    {% endif %}
+</div>
+
+<!-- 질문 추가 모달 -->
+{% include 'partials/interview_add_question_modal.html' %}
+
+<!-- 질문 편집 모달 -->
+{% include 'partials/interview_edit_question_modal.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+{% endblock %}

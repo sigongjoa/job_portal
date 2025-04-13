@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}캘린더 - 구직 정보 관리 시스템{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css">
+<style>
+    .calendar-container {
+        height: 800px;
+    }
+    .fc-event {
+        cursor: pointer;
+    }
+    .fc-event:hover {
+        opacity: 0.9;
+    }
+    .event-type-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        margin-right: 5px;
+    }
+    .event-actions {
+        margin-top: 15px;
+    }
+    .fc-toolbar-title {
+        font-size: 1.5em !important;
+    }
+    .modal-body .form-group {
+        margin-bottom: 15px;
+    }
+    .color-selector {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    .color-option {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    .color-option.selected {
+        border-color: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>캘린더</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" id="add-event-btn">
+            <i class="bi bi-plus-circle"></i> 새 이벤트 추가
+        </button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+            <i class="bi bi-house"></i> 홈으로
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-info mb-4">
+    <strong>안내:</strong> 캘린더에 이벤트가 표시되지 않을 경우 페이지를 새로고침해 보세요. 오류가 지속되면 관리자에게 문의하세요.
+</div>
+
+<div class="calendar-container" id="calendar"></div>
+
+<!-- 이벤트 추가/수정 모달 -->
+<div class="modal fade" id="event-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="event-modal-title">새 이벤트 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form">
+                    <input type="hidden" id="event-id">
+                    
+                    <div class="form-group">
+                        <label for="event-title">제목 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="event-title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-description">설명</label>
+                        <textarea class="form-control" id="event-description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-type">이벤트 유형</label>
+                        <select class="form-control" id="event-type">
+                            <option value="일반">일반</option>
+                            <option value="면접">면접</option>
+                            <option value="코딩테스트">코딩 테스트</option>
+                            <option value="과제">과제</option>
+                            <option value="마감일">마감일</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-job">관련 채용 정보</label>
+                        <select class="form-control" id="event-job">
+                            <option value="">없음</option>
+                            {% for job in jobs %}
+                            <option value="{{ job.id }}">{{ job.company_name }} - {{ job.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>이벤트 색상</label>
+                        <div class="color-selector">
+                            <div class="color-option selected" data-color="#3788d8" style="background-color: #3788d8;"></div>
+                            <div class="color-option" data-color="#ff5555" style="background-color: #ff5555;"></div>
+                            <div class="color-option" data-color="#55aa55" style="background-color: #55aa55;"></div>
+                            <div class="color-option" data-color="#8e44ad" style="background-color: #8e44ad;"></div>
+                            <div class="color-option" data-color="#f39c12" style="background-color: #f39c12;"></div>
+                            <div class="color-option" data-color="#1abc9c" style="background-color: #1abc9c;"></div>
+                            <div class="color-option" data-color="#34495e" style="background-color: #34495e;"></div>
+                            <div class="color-option" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
+                        </div>
+                        <input type="hidden" id="event-color" value="#3788d8">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="event-all-day" checked>
+                            <label class="form-check-label" for="event-all-day">
+                                종일
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="event-start-date">시작 날짜 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="event-start-date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group time-group">
+                                <label for="event-start-time">시작 시간</label>
+                                <input type="time" class="form-control" id="event-start-time">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="end-date-time-container">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="event-end-date">종료 날짜</label>
+                                <input type="date" class="form-control" id="event-end-date">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group time-group">
+                                <label for="event-end-time">종료 시간</label>
+                                <input type="time" class="form-control" id="event-end-time">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" id="delete-event-btn" style="display: none;">
+                    <i class="bi bi-trash"></i> 삭제
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="save-event-btn">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 이벤트 상세 보기 모달 -->
+<div class="modal fade" id="event-detail-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="event-detail-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <span class="event-type-badge" id="event-detail-type-badge"></span>
+                    <span id="event-detail-date"></span>
+                </div>
+                <div class="mb-3" id="event-detail-job-container" style="display: none;">
+                    <strong>관련 채용:</strong>
+                    <a href="#" id="event-detail-job-link"></a>
+                </div>
+                <div class="mb-3" id="event-detail-description-container" style="display: none;">
+                    <strong>설명:</strong>
+                    <p id="event-detail-description"></p>
+                </div>
+                <div class="event-actions">
+                    <button type="button" class="btn btn-primary" id="edit-event-btn">
+                        <i class="bi bi-pencil"></i> 편집
+                    </button>
+                    <button type="button" class="btn btn-danger" id="detail-delete-event-btn">
+                        <i class="bi bi-trash"></i> 삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/locales/ko.js"></script>
+<script>
+    // 전역 변수로 채용 정보 데이터 선언
+    window.jobs = {{ jobs|tojson|safe }};
+    
+    // jobs 가 정의되지 않는 경우 안전하게 처리
+    if (typeof window.jobs !== 'object' || window.jobs === null) {
+        console.warn('채용 데이터가 없습니다.');
+        window.jobs = [];
+    }
+</script>
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}

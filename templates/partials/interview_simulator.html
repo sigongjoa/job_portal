@@ -1,0 +1,120 @@
+<div class="tab-pane fade" id="simulator" role="tabpanel" aria-labelledby="simulator-tab">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>모의 면접 시뮬레이터</h5>
+                </div>
+                <div class="card-body">
+                    <div id="interview-container">
+                        <div class="mb-4">
+                            <h5 id="current-question">질문을 선택하거나 시작 버튼을 클릭하세요.</h5>
+                            <div id="question-details" class="text-muted mb-3" style="display: none;">
+                                <span id="question-category" class="badge me-2"></span>
+                                <span id="question-difficulty"></span>
+                            </div>
+                            <div id="timer-display" class="mt-3" style="display: none;">
+                                <span class="badge bg-primary">남은 시간: <span id="timer">60</span>초</span>
+                            </div>
+                        </div>
+                        
+                        <div id="practice-controls">
+                            <button class="btn btn-primary" id="start-practice-btn">
+                                <i class="bi bi-play-fill"></i> 시작
+                            </button>
+                            <button class="btn btn-warning" id="pause-practice-btn" style="display: none;">
+                                <i class="bi bi-pause-fill"></i> 일시정지
+                            </button>
+                            <button class="btn btn-danger" id="stop-practice-btn" style="display: none;">
+                                <i class="bi bi-stop-fill"></i> 종료
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4" id="answer-section" style="display: none;">
+                            <div class="form-group">
+                                <label for="practice-answer">내 답변:</label>
+                                <textarea class="form-control" id="practice-answer" rows="6"></textarea>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" id="save-answer-btn">
+                                    <i class="bi bi-check2"></i> 답변 저장
+                                </button>
+                                {% if mcp_enabled %}
+                                <button class="btn btn-warning" id="get-feedback-btn">
+                                    <i class="bi bi-robot"></i> AI 피드백 받기
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if mcp_enabled %}
+            <!-- AI 피드백 섹션 -->
+            <div class="card" id="feedback-section" style="display: none;">
+                <div class="card-header">
+                    <h5>AI 피드백</h5>
+                </div>
+                <div class="card-body">
+                    <div id="feedback-content"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <!-- 모의 면접 설정 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>면접 설정</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label for="interview-time">답변 시간 (초)</label>
+                        <input type="number" class="form-control" id="interview-time" value="60" min="30" max="300">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="question-set">질문 세트</label>
+                        <select class="form-select" id="question-set">
+                            <option value="random">랜덤 질문</option>
+                            <option value="all">모든 질문</option>
+                            <option value="category-general">일반 질문</option>
+                            <option value="category-technical">기술 질문</option>
+                            <option value="category-personality">인성 질문</option>
+                            <option value="category-experience">경험 질문</option>
+                            {% if job %}
+                            <option value="job-{{ job.id }}" selected>{{ job.company_name }} 질문</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="question-count">질문 수</label>
+                        <input type="number" class="form-control" id="question-count" value="5" min="1" max="20">
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable-timer" checked>
+                        <label class="form-check-label" for="enable-timer">
+                            타이머 사용
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 면접 질문 목록 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>면접 질문 목록</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group" id="interview-questions-list">
+                        <li class="list-group-item text-muted">질문을 선택하거나 시작 버튼을 클릭하세요.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

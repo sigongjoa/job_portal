@@ -1,0 +1,213 @@
+<div class="tab-pane fade" id="ai-assistant" role="tabpanel" aria-labelledby="ai-assistant-tab">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- AI 채팅 섹션 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>AI 면접 도우미와 대화</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="ai-chat-messages">
+                            <div class="message ai-message">
+                                안녕하세요! 면접 준비를 도와드릴 AI 면접 도우미입니다. 어떤 도움이 필요하신가요?
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="ai-chat-input" placeholder="메시지를 입력하세요...">
+                                <button class="btn btn-primary" id="ai-chat-send">
+                                    <i class="bi bi-send"></i> 전송
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 자동 생성 질문 섹션 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>AI 면접 질문 생성</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p>채용 공고나 직무 정보를 바탕으로 면접 질문을 자동으로 생성합니다.</p>
+                    </div>
+                    
+                    <form id="generate-questions-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="job-title-input">직무명</label>
+                                    <input type="text" class="form-control" id="job-title-input" placeholder="예: 백엔드 개발자" 
+                                        value="{% if job %}{{ job.title }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="company-name-input">회사명</label>
+                                    <input type="text" class="form-control" id="company-name-input" placeholder="예: 삼성전자"
+                                        value="{% if job %}{{ job.company_name }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label>질문 카테고리</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="일반" id="category-general-check" checked>
+                                        <label class="form-check-label" for="category-general-check">
+                                            일반
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="기술" id="category-technical-check" checked>
+                                        <label class="form-check-label" for="category-technical-check">
+                                            기술
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="인성" id="category-personality-check" checked>
+                                        <label class="form-check-label" for="category-personality-check">
+                                            인성
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="경험" id="category-experience-check" checked>
+                                        <label class="form-check-label" for="category-experience-check">
+                                            경험
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="question-count-input">생성할 질문 수</label>
+                                    <input type="number" class="form-control" id="question-count-input" value="5" min="1" max="20">
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="job-selector">관련 채용 공고</label>
+                                    <select class="form-select" id="job-selector">
+                                        <option value="">없음</option>
+                                        {% for j in jobs %}
+                                        <option value="{{ j.id }}" {% if job and job.id == j.id %}selected{% endif %}>
+                                            {{ j.company_name }} - {{ j.title }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-primary" id="generate-questions-btn">
+                                <i class="bi bi-magic"></i> 질문 생성
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4" id="generated-questions-container" style="display: none;">
+                        <h6>생성된 질문</h6>
+                        <div class="list-group" id="generated-questions-list"></div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-success" id="save-all-questions-btn">
+                                <i class="bi bi-save"></i> 모든 질문 저장
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- 면접 팁 섹션 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>면접 팁</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="interviewTipsAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    면접 전 준비
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#interviewTipsAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>회사와 직무에 대한 충분한 리서치</li>
+                                        <li>자주 나오는 질문에 대한 답변 준비</li>
+                                        <li>자신의 이력서와 경력 내용 숙지</li>
+                                        <li>면접관에게 질문할 내용 미리 준비</li>
+                                        <li>복장과 준비물 체크</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    면접 중 태도
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#interviewTipsAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>적절한 눈 맞춤과 바른 자세 유지</li>
+                                        <li>명확하고 간결하게 대답하기</li>
+                                        <li>경청하고 질문을 제대로 이해한 후 대답</li>
+                                        <li>긍정적이고 열정적인 태도 보이기</li>
+                                        <li>솔직하게 답변하되, 약점은 극복 방안과 함께 제시</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    STAR 기법 활용
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#interviewTipsAccordion">
+                                <div class="accordion-body">
+                                    <p>경험을 설명할 때 STAR 기법을 활용하세요:</p>
+                                    <ul>
+                                        <li><strong>S</strong>ituation(상황): 어떤 상황이었는지</li>
+                                        <li><strong>T</strong>ask(임무): 어떤 업무/과제를 맡았는지</li>
+                                        <li><strong>A</strong>ction(행동): 어떤 행동을 취했는지</li>
+                                        <li><strong>R</strong>esult(결과): 어떤 결과를 얻었는지</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 최근 질문 섹션 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>최근 질문</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush" id="recent-questions-list">
+                        {% for question in questions[:5] %}
+                        <li class="list-group-item">
+                            <div>{{ question.question }}</div>
+                            <small class="text-muted">{{ question.category }}</small>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted">최근 질문이 없습니다.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

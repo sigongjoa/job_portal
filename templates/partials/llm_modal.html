@@ -1,0 +1,48 @@
+<!-- LLM 통합 모달 -->
+<div class="modal fade" id="llmModal" tabindex="-1" aria-labelledby="llmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="llmModalLabel">AI 도우미{% if job %} - {{ job.company_name }}{% endif %}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="llmPrompt" class="form-label">무엇을 도와드릴까요?</label>
+                    <select class="form-select mb-2" id="llmTaskType">
+                        <option value="analyze">채용공고 분석</option>
+                        <option value="resume">자기소개서 작성</option>
+                        <option value="cover">자기소개서 초안 작성</option>
+                        <option value="interview">면접 답변 제안</option>
+                    </select>
+                    <textarea class="form-control" id="llmPrompt" rows="5" placeholder="채용공고 내용을 붙여넣거나 질문을 입력하세요..."></textarea>
+                    <input type="hidden" id="llmJobId" value="{% if job %}{{ job.id }}{% endif %}">
+                </div>
+                
+                <!-- 분석 결과 표시 영역 -->
+                <div id="llmPromptArea" class="mb-3 p-3 border rounded bg-light" style="white-space: pre-wrap; display: none;"></div>
+                
+                <div id="llmLoadingSpinner" style="display: none;" class="text-center mb-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">AI 응답 생성 중...</p>
+                </div>
+                
+                <div id="llmResultContainer" style="display: none;" class="mb-3">
+                    <label class="form-label">AI 응답:</label>
+                    <div id="llmResult" class="border rounded p-3 bg-light" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+                    
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="button" id="llmSaveToResume" class="btn btn-sm btn-success me-2">자기소개서로 저장</button>
+                        <button type="button" id="llmCopyToClipboard" class="btn btn-sm btn-outline-primary">클립보드에 복사</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="llmSubmitBtn">AI 생성하기</button>
+            </div>
+        </div>
+    </div>
+</div>

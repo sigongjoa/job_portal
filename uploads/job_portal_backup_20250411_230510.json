@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "site": "사람인",
+    "company_name": "테스트 회사 1",
+    "title": "백엔드 개발자 채용",
+    "url": "https://www.saramin.co.kr/job/1",
+    "status": "미지원",
+    "note": null,
+    "deadline": "2025-05-10",
+    "created_at": "2025-04-11 08:41:53",
+    "resume": null,
+    "resume_file": null,
+    "portfolio_file": null,
+    "application_date": null,
+    "company_id": 1
+  },
+  {
+    "id": 2,
+    "site": "잡플래닛",
+    "company_name": "테스트 회사 2",
+    "title": "프론트엔드 개발자 채용",
+    "url": "https://www.jobplanet.co.kr/job/2",
+    "status": "지원",
+    "note": null,
+    "deadline": "2025-04-30",
+    "created_at": "2025-04-11 08:41:53",
+    "resume": null,
+    "resume_file": null,
+    "portfolio_file": null,
+    "application_date": "2025-04-01",
+    "company_id": 2
+  },
+  {
+    "id": 3,
+    "site": "인크루트",
+    "company_name": "테스트 회사 3",
+    "title": "풀스택 개발자 채용",
+    "url": "https://www.incruit.com/job/3",
+    "status": "서류합격",
+    "note": null,
+    "deadline": "2025-03-31",
+    "created_at": "2025-04-11 08:41:53",
+    "resume": null,
+    "resume_file": null,
+    "portfolio_file": null,
+    "application_date": "2025-03-15",
+    "company_id": 3
+  }
+]

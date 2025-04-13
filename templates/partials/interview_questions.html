@@ -1,0 +1,114 @@
+<div class="tab-pane fade show active" id="questions" role="tabpanel" aria-labelledby="questions-tab">
+    <!-- 필터 섹션 -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="search-question" placeholder="질문 검색...">
+                    <button class="btn btn-outline-secondary" type="button" id="search-btn">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select mb-3" id="category-filter">
+                    <option value="">모든 카테고리</option>
+                    <option value="일반">일반</option>
+                    <option value="기술">기술</option>
+                    <option value="인성">인성</option>
+                    <option value="경험">경험</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select mb-3" id="job-filter">
+                    <option value="">모든 채용 공고</option>
+                    {% for j in jobs %}
+                    <option value="{{ j.id }}" {% if job and job.id == j.id %}selected{% endif %}>
+                        {{ j.company_name }} - {{ j.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary w-100" id="reset-filter-btn">
+                    <i class="bi bi-arrow-counterclockwise"></i> 초기화
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 질문 목록 -->
+    <div id="questions-container">
+        {% if questions %}
+            {% for question in questions %}
+            <div class="question-card" 
+                 data-question-text="{{ question.question }}" 
+                 data-category="{{ question.category }}" 
+                 data-job-id="{{ question.job_id or '' }}">
+                <div class="question-header">
+                    <div>
+                        <span class="badge 
+                            {% if question.category == '일반' %}bg-secondary
+                            {% elif question.category == '기술' %}bg-primary
+                            {% elif question.category == '인성' %}bg-info
+                            {% elif question.category == '경험' %}bg-success
+                            {% else %}bg-secondary{% endif %} 
+                            category-badge">{{ question.category }}</span>
+                        
+                        <span class="difficulty">
+                            난이도:
+                            {% for i in range(1, 6) %}
+                            <i class="bi bi-star-fill difficulty-star {% if i > question.difficulty %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <div class="question-controls">
+                        <button class="btn btn-sm btn-outline-primary edit-question-btn" data-question-id="{{ question.id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-question-btn" data-question-id="{{ question.id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="question-body">
+                    <h5>{{ question.question }}</h5>
+                    
+                    {% if question.answer %}
+                    <div class="mt-3 answer-section">
+                        <strong>답변:</strong>
+                        <div>{{ question.answer }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if question.job_id %}
+                    <div class="mt-3 text-muted">
+                        <small>
+                            {% for j in jobs %}
+                                {% if j.id == question.job_id %}
+                                관련 채용: {{ j.company_name }} - {{ j.title }}
+                                {% endif %}
+                            {% endfor %}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="question-footer">
+                    <button class="btn btn-sm btn-primary practice-btn" data-question-id="{{ question.id }}">
+                        <i class="bi bi-mic"></i> 연습하기
+                    </button>
+                    {% if mcp_enabled %}
+                    <button class="btn btn-sm btn-warning ai-feedback-btn" data-question-id="{{ question.id }}">
+                        <i class="bi bi-robot"></i> AI 피드백
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                등록된 면접 질문이 없습니다. 새 질문을 추가해보세요.
+            </div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,22 @@
+<!-- 메모 모달 -->
+<div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noteModalLabel">지원 메모</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="noteJobId" value="">
+                <div class="mb-3">
+                    <label for="noteText" class="form-label">이 채용공고에 대한 메모를 입력하세요:</label>
+                    <textarea class="form-control" id="noteText" rows="5"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="saveNoteBtn">저장</button>
+            </div>
+        </div>
+    </div>
+</div>

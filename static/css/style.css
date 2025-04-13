@@ -1,24 +1,33 @@
 /* 메인 스타일 */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
 }
 
 .container {
-    max-width: 1200px;
+    background-color: #fff;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
 }
 
-/* 카드 스타일 */
+/* 카드 디자인 */
 .card {
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .card-header {
     background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    padding: 12px 20px;
+}
+
+.card-body {
+    padding: 20px;
 }
 
 /* 테이블 스타일 */
@@ -31,226 +40,96 @@ body {
     color: #495057;
 }
 
-.job-title {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 500;
+.table td {
+    vertical-align: middle;
 }
 
-.job-title:hover {
-    text-decoration: underline;
+/* 버튼 그룹 */
+.btn-group .btn {
+    margin-right: 0;
 }
 
-/* 토글 스위치 스타일 */
-.form-switch .form-check-input {
-    cursor: pointer;
+/* 폼 요소 */
+.form-control, .form-select {
+    border-color: #ced4da;
+    border-radius: 6px;
 }
 
-.form-switch .form-check-input:checked {
-    background-color: #28a745;
-    border-color: #28a745;
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
 }
 
-/* 로딩 인디케이터 */
-#loadingIndicator {
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-/* 버튼 스타일 */
-.btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-}
-
-.btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-danger:hover {
-    background-color: #bb2d3b;
-    border-color: #b02a37;
-}
-
-/* 반응형 스타일 */
-@media (max-width: 768px) {
-    .table-responsive {
-        overflow-x: auto;
-    }
-    
-    .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .card-header div {
-        margin-top: 10px;
-    }
-}
-
-/* 메모 버튼 스타일 */
+/* 메모 버튼 */
 .note-btn {
-    padding: 0.25rem 0.5rem;
+    width: 32px;
+    height: 32px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.note-btn i {
-    font-size: 16px;
+/* 상태별 뱃지 색상 */
+.badge.bg-secondary { background-color: #6c757d !important; }
+.badge.bg-primary { background-color: #0d6efd !important; }
+.badge.bg-info { background-color: #0dcaf0 !important; }
+.badge.bg-warning { background-color: #ffc107 !important; }
+.badge.bg-success { background-color: #198754 !important; }
+.badge.bg-danger { background-color: #dc3545 !important; }
+.badge.bg-dark { background-color: #212529 !important; }
+
+/* 로딩 인디케이터 */
+#loadingIndicator {
+    margin-top: 10px;
 }
 
-/* 상태에 따른 색상 지정 */
-.status-applied {
-    color: #28a745;
-    font-weight: 500;
+/* AI 도우미 페이지 스타일 */
+.ai-card {
+    transition: transform 0.2s;
 }
 
-.status-pending {
-    color: #fd7e14;
-    font-weight: 500;
+.ai-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.status-not-applied {
-    color: #6c757d;
+.tool-card {
+    cursor: pointer;
+    height: 100%;
 }
 
-/* 메모 모달 스타일 */
-#noteText, #editNoteText {
-    resize: vertical;
-    min-height: 120px;
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .card-header {
+        padding: 10px 15px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
 }
 
-/* 메모 버튼에 호버 효과 */
-.note-btn:hover {
-    background-color: #17a2b8;
-    color: white;
-}
-
-/* 상세 페이지 스타일 */
-.job-detail-header {
-    background-color: #f8f9fa;
-    padding: 20px;
+/* 모달 스타일 */
+.modal-content {
+    border: none;
     border-radius: 10px;
-    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.job-detail-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 10px;
+.modal-header {
+    border-bottom: 1px solid #eee;
 }
 
-.job-detail-company {
-    font-size: 18px;
-    color: #6c757d;
-    margin-bottom: 15px;
-}
-
-.job-detail-badge {
-    margin-right: 10px;
-    font-size: 14px;
-}
-
-/* 자소서 섹션 스타일 */
-.resume-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.resume-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-/* 마감일 표시 스타일 */
-.deadline-badge {
-    font-size: 12px;
-    padding: 5px 8px;
-}
-
-.deadline-approaching {
-    background-color: #dc3545;
-    color: white;
-}
-
-.deadline-expired {
-    background-color: #6c757d;
-    color: white;
-}
-
-/* 지원 상태 스타일 */
-.status-selector {
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 8px 12px;
-    background-color: white;
-    font-weight: 500;
-}
-
-.status-미지원 {
-    background-color: #f8f9fa;
-    color: #6c757d;
-}
-
-.status-지원 {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-.status-서류합격 {
-    background-color: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-1차면접, .status-2차면접 {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.status-최종합격 {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-불합격 {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-보류 {
-    background-color: #e2e3e5;
-    color: #383d41;
-}
-
-/* 파일 업로드 영역 스타일 */
-.file-upload-area {
-    border: 2px dashed #dee2e6;
-    border-radius: 5px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-}
-
-.file-upload-area:hover {
-    border-color: #adb5bd;
-    background-color: #f8f9fa;
-}
-
-/* nl2br 필터 대체 스타일 */
-.nl2br {
-    white-space: pre-wrap;
+.modal-footer {
+    border-top: 1px solid #eee;
 }

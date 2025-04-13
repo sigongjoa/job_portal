@@ -1,0 +1,68 @@
+<div class="modal fade" id="edit-question-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">면접 질문 편집</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-question-form">
+                    <input type="hidden" id="edit-question-id">
+                    
+                    <div class="mb-3">
+                        <label for="edit-question-job" class="form-label">관련 채용 공고</label>
+                        <select class="form-select" id="edit-question-job" name="job_id">
+                            <option value="">없음</option>
+                            {% for j in jobs %}
+                            <option value="{{ j.id }}">{{ j.company_name }} - {{ j.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit-question-text" class="form-label">질문 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="edit-question-text" name="question" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit-question-answer" class="form-label">답변</label>
+                        <textarea class="form-control" id="edit-question-answer" name="answer" rows="6"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit-question-category" class="form-label">카테고리</label>
+                                <select class="form-select" id="edit-question-category" name="category">
+                                    <option value="일반">일반</option>
+                                    <option value="기술">기술</option>
+                                    <option value="인성">인성</option>
+                                    <option value="경험">경험</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit-question-difficulty" class="form-label">난이도</label>
+                                <select class="form-select" id="edit-question-difficulty" name="difficulty">
+                                    <option value="1">1 - 매우 쉬움</option>
+                                    <option value="2">2 - 쉬움</option>
+                                    <option value="3">3 - 보통</option>
+                                    <option value="4">4 - 어려움</option>
+                                    <option value="5">5 - 매우 어려움</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" id="delete-question-btn">
+                    <i class="bi bi-trash"></i> 삭제
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="update-question-btn">저장</button>
+            </div>
+        </div>
+    </div>
+</div>

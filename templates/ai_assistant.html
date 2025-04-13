@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}AI 구직 도우미 | 구직 정보 관리 시스템{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-card {
+        border-radius: 10px;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    
+    .ai-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tool-card {
+        cursor: pointer;
+        height: 100%;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .result-container {
+        display: none;
+        margin-top: 20px;
+        border-left: 4px solid #0d6efd;
+        padding-left: 15px;
+    }
+    
+    .output-section {
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+    
+    .connection-status {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">AI 구직 도우미</h1>
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> 목록으로 돌아가기
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Connection Status -->
+<div class="connection-status {% if lm_studio_connected %}status-connected{% else %}status-disconnected{% endif %}">
+    <i class="bi {% if lm_studio_connected %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+    LM Studio 상태: {% if lm_studio_connected %}연결됨{% else %}연결 안됨{% endif %}
+    {% if not lm_studio_connected %}
+    <div class="mt-2 small">
+        <a href="https://lmstudio.ai/" target="_blank">LM Studio</a>를 실행하고 로컬 모델을 서버로 구동해주세요.
+    </div>
+    {% endif %}
+</div>
+
+{% if job %}
+<!-- Job Information Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">선택된 채용 정보</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>회사:</strong> {{ job.company_name }}</p>
+                <p><strong>제목:</strong> {{ job.title }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>사이트:</strong> {{ job.site }}</p>
+                <p><strong>상태:</strong> {{ job.status }}</p>
+            </div>
+        </div>
+        <input type="hidden" id="job_id" value="{{ job.id }}">
+    </div>
+</div>
+{% endif %}
+
+<!-- AI Tools -->
+<div class="row mb-4">
+    {% for tool in tools %}
+    <div class="col-md-6 mb-3">
+        <div class="card ai-card tool-card h-100" data-tool-name="{{ tool.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ tool.name | replace('_', ' ') | title }}</h5>
+                <p class="card-text">{{ tool.description }}</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <button class="btn btn-sm btn-primary select-tool" data-tool-name="{{ tool.name }}">
+                    <i class="bi bi-magic"></i> 선택
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Tool Forms -->
+<div id="tool-forms" class="mb-4">
+    <!-- Generate Resume Form -->
+    <div id="generate_resume-form" class="tool-form" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">자기소개서 생성</h5>
+            </div>
+            <div class="card-body">
+                <form id="generate_resume-tool-form">
+                    <input type="hidden" name="tool_name" value="generate_resume">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">채용 제목</label>
+                        <input type="text" class="form-control" id="resume_job_title" name="job_title" value="{{ job.title if job else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">회사명</label>
+                        <input type="text" class="form-control" id="resume_company_name" name="company_name" value="{{ job.company_name if job else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="job_description" class="form-label">채용 설명</label>
+                        <textarea class="form-control" id="resume_job_description" name="job_description" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_skills" class="form-label">나의 스킬 및 경험</label>
+                        <textarea class="form-control" id="resume_user_skills" name="user_skills" rows="5"></textarea>
+                        <div class="form-text">당신의 기술, 경험, 교육 배경 등을 설명하세요.</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">생성하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analyze Job Posting Form -->
+    <div id="analyze_job_posting-form" class="tool-form" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">채용공고 분석</h5>
+            </div>
+            <div class="card-body">
+                <form id="analyze_job_posting-tool-form">
+                    <input type="hidden" name="tool_name" value="analyze_job_posting">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">채용 제목</label>
+                        <input type="text" class="form-control" id="analyze_job_title" name="job_title" value="{{ job.title if job else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="job_description" class="form-label">채용 내용</label>
+                        <textarea class="form-control" id="analyze_job_description" name="job_description" rows="8" required></textarea>
+                        <div class="form-text">전체 채용 내용을 복사하여 붙여넣으세요.</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">분석하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Draft Cover Letter Form -->
+    <div id="draft_cover_letter-form" class="tool-form" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">자기소개서 초안 작성</h5>
+            </div>
+            <div class="card-body">
+                <form id="draft_cover_letter-tool-form">
+                    <input type="hidden" name="tool_name" value="draft_cover_letter">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">채용 제목</label>
+                        <input type="text" class="form-control" id="cover_job_title" name="job_title" value="{{ job.title if job else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">회사명</label>
+                        <input type="text" class="form-control" id="cover_company_name" name="company_name" value="{{ job.company_name if job else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_background" class="form-label">나의 배경</label>
+                        <textarea class="form-control" id="cover_user_background" name="user_background" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="key_points" class="form-label">강조할 핵심 포인트</label>
+                        <textarea class="form-control" id="cover_key_points" name="key_points" rows="4"></textarea>
+                        <div class="form-text">강조하고 싶은 경험, 스킬, 관련 내용을 작성하세요.</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">작성하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Suggest Interview Answers Form -->
+    <div id="suggest_interview_answers-form" class="tool-form" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">면접 질문 답변 제안</h5>
+            </div>
+            <div class="card-body">
+                <form id="suggest_interview_answers-tool-form">
+                    <input type="hidden" name="tool_name" value="suggest_interview_answers">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">채용 제목</label>
+                        <input type="text" class="form-control" id="interview_job_title" name="job_title" value="{{ job.title if job else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="interview_question" class="form-label">면접 질문</label>
+                        <input type="text" class="form-control" id="interview_question" name="interview_question" required>
+                        <div class="form-text">예: "당신의 가장 큰 강점은 무엇입니까?" 또는 "5년 후 자신의 모습을 어떻게 그리고 계십니까?"</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user_background" class="form-label">나의 배경</label>
+                        <textarea class="form-control" id="interview_user_background" name="user_background" rows="4"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">답변 생성하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="loading-spinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">AI가 응답을 생성하는 중입니다...</p>
+    <p class="small text-muted">(지역 LLM을 사용하므로 시간이 좀 걸릴 수 있습니다)</p>
+</div>
+
+<!-- Results Container -->
+<div id="result-container" class="result-container">
+    <h4 class="mb-3">결과:</h4>
+    <div id="output-section" class="output-section"></div>
+    
+    <!-- Save Options -->
+    <div class="mt-3">
+        <button id="save-to-resume" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-text"></i> 자기소개서로 저장
+        </button>
+        <button id="save-to-clipboard" class="btn btn-outline-primary">
+            <i class="bi bi-clipboard"></i> 클립보드에 복사
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tool selection
+    const selectToolButtons = document.querySelectorAll('.select-tool');
+    const toolForms = document.querySelectorAll('.tool-form');
+    
+    selectToolButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const toolName = this.getAttribute('data-tool-name');
+            
+            // Hide all forms
+            toolForms.forEach(form => {
+                form.style.display = 'none';
+            });
+            
+            // Show the selected form
+            const selectedForm = document.getElementById(`${toolName}-form`);
+            if (selectedForm) {
+                selectedForm.style.display = 'block';
+                
+                // Scroll to the form
+                selectedForm.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+            
+            // Hide the result container when switching tools
+            document.getElementById('result-container').style.display = 'none';
+        });
+    });
+    
+    // Form submissions
+    const allToolForms = document.querySelectorAll('[id$="-tool-form"]');
+    allToolForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const toolName = formData.get('tool_name');
+            
+            // Hide result and show loading
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('loading-spinner').style.display = 'block';
+            
+            // Create arguments object
+            const args = {};
+            formData.forEach((value, key) => {
+                if (key !== 'tool_name') {
+                    args[key] = value;
+                }
+            });
+            
+            // Make API call
+            fetch('/ai/call_tool', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tool_name: toolName,
+                    arguments: args
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loading
+                document.getElementById('loading-spinner').style.display = 'none';
+                
+                // Show result
+                const resultContainer = document.getElementById('result-container');
+                const outputSection = document.getElementById('output-section');
+                
+                if (data.success && data.result) {
+                    outputSection.textContent = data.result;
+                } else if (data.error) {
+                    outputSection.textContent = "\u2757 Error: " + data.error;
+                } else {
+                    outputSection.textContent = "\u2757 No response from server.";
+                }
+                
+                resultContainer.style.display = 'block';
+                
+                // Show/hide save options based on tool type
+                const saveToResumeBtn = document.getElementById('save-to-resume');
+                if (toolName === 'generate_resume' || toolName === 'draft_cover_letter') {
+                    saveToResumeBtn.style.display = 'inline-block';
+                } else {
+                    saveToResumeBtn.style.display = 'none';
+                }
+                
+                // Scroll to result
+                resultContainer.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loading-spinner').style.display = 'none';
+                
+                // 오류 결과 표시
+                const resultContainer = document.getElementById('result-container');
+                const outputSection = document.getElementById('output-section');
+                
+                outputSection.textContent = `\u2757 오류가 발생했습니다: ${error.message || '서버에 연결할 수 없습니다.'}`;
+                resultContainer.style.display = 'block';
+                
+                // 저장 버튼 숨기기
+                document.getElementById('save-to-resume').style.display = 'none';
+            });
+        });
+    });
+    
+    // Copy to clipboard
+    document.getElementById('save-to-clipboard').addEventListener('click', function() {
+        const outputText = document.getElementById('output-section').textContent;
+        navigator.clipboard.writeText(outputText)
+            .then(() => {
+                alert('클립보드에 복사되었습니다!');
+            })
+            .catch(err => {
+                console.error('클립보드 복사 실패:', err);
+                alert('클립보드 복사에 실패했습니다.');
+            });
+    });
+    
+    // Save to resume
+    document.getElementById('save-to-resume').addEventListener('click', function() {
+        const jobId = document.getElementById('job_id')?.value;
+        if (!jobId) {
+            alert('채용 정보가 선택되지 않았습니다.');
+            return;
+        }
+        
+        const outputText = document.getElementById('output-section').textContent;
+        
+        fetch(`/ai/save_to_resume/${jobId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                resume_text: outputText
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('채용 공고에 자기소개서로 저장되었습니다!');
+            } else {
+                alert('저장 실패: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('저장 중 오류가 발생했습니다.');
+        });
+    });
+});
+</script>
+{% endblock %}

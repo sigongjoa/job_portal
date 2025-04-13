@@ -1,0 +1,5 @@
+flask>=2.0.0
+flask-sqlalchemy>=3.0.0
+requests>=2.25.0
+modelcontextprotocol>=1.0.0
+asyncio>=3.4.3

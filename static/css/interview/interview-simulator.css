@@ -1,0 +1,35 @@
+/* 모의 면접 시뮬레이터 스타일 */
+.active-question {
+    background-color: #e9f5ff;
+}
+.feedback-section {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+#timer-display {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+#answer-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+.feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.feedback-content {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.feedback-section h5 {
+    margin-bottom: 15px;
+}

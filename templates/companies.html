@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+
+{% block title %}회사 정보 관리 - 구직 정보 관리 시스템{% endblock %}
+
+{% block extra_css %}
+<style>
+    .company-card {
+        transition: all 0.3s ease;
+        border: 1px solid #ddd;
+        height: 100%;
+    }
+    .company-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+    .company-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+    .company-body {
+        padding: 15px;
+    }
+    .company-footer {
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        background-color: #f8f9fa;
+    }
+    .filter-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>회사 정보 관리</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-company-modal">
+            <i class="bi bi-plus-circle"></i> 회사 추가
+        </button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+            <i class="bi bi-house"></i> 홈으로
+        </a>
+    </div>
+</div>
+
+<!-- 필터 섹션 -->
+<div class="filter-section">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" id="search-company" placeholder="회사명 검색...">
+                <button class="btn btn-outline-secondary" type="button" id="search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="industry-filter">
+                <option value="">모든 업종</option>
+                {% set industries = [] %}
+                {% for company in companies %}
+                    {% if company.industry and company.industry not in industries %}
+                        {% set _ = industries.append(company.industry) %}
+                    {% endif %}
+                {% endfor %}
+                {% for industry in industries|sort %}
+                    <option value="{{ industry }}">{{ industry }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="location-filter">
+                <option value="">모든 지역</option>
+                {% set locations = [] %}
+                {% for company in companies %}
+                    {% if company.location and company.location not in locations %}
+                        {% set _ = locations.append(company.location) %}
+                    {% endif %}
+                {% endfor %}
+                {% for location in locations|sort %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-secondary w-100" id="reset-filter-btn">
+                <i class="bi bi-arrow-counterclockwise"></i> 초기화
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 회사 목록 -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="companies-container">
+    {% for company in companies %}
+    <div class="col company-item" 
+         data-name="{{ company.name }}" 
+         data-industry="{{ company.industry }}" 
+         data-location="{{ company.location }}">
+        <div class="company-card">
+            <div class="company-header">
+                <h5 class="card-title mb-0">{{ company.name }}</h5>
+            </div>
+            <div class="company-body">
+                <div class="mb-2">
+                    <strong>업종:</strong> {{ company.industry or '정보 없음' }}
+                </div>
+                <div class="mb-2">
+                    <strong>위치:</strong> {{ company.location or '정보 없음' }}
+                </div>
+                <div class="mb-2">
+                    <strong>웹사이트:</strong> 
+                    {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                    {% else %}
+                    정보 없음
+                    {% endif %}
+                </div>
+                <div class="mb-2">
+                    <strong>채용 공고:</strong> {{ company.jobs|length }}개
+                </div>
+                <div class="description-preview">
+                    {{ company.description|truncate(100) if company.description else '회사 설명 정보가 없습니다.' }}
+                </div>
+            </div>
+            <div class="company-footer">
+                <a href="{{ url_for('companies.company_detail', company_id=company.id) }}" class="btn btn-primary">
+                    <i class="bi bi-info-circle"></i> 상세 정보
+                </a>
+                <button type="button" class="btn btn-outline-secondary edit-company-btn" data-company-id="{{ company.id }}">
+                    <i class="bi bi-pencil"></i> 편집
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            등록된 회사가 없습니다. 새 회사를 추가해보세요.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 회사 추가 모달 -->
+<div class="modal fade" id="add-company-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-company-modal-title">회사 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-company-form" action="/companies/companies/create" method="post">
+                    <div class="mb-3">
+                        <label for="company-name" class="form-label">회사명 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="company-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="company-industry" class="form-label">업종</label>
+                        <input type="text" class="form-control" id="company-industry" name="industry">
+                    </div>
+                    <div class="mb-3">
+                        <label for="company-location" class="form-label">위치</label>
+                        <input type="text" class="form-control" id="company-location" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="company-website" class="form-label">웹사이트</label>
+                        <input type="url" class="form-control" id="company-website" name="website">
+                    </div>
+                    <div class="mb-3">
+                        <label for="company-description" class="form-label">설명</label>
+                        <textarea class="form-control" id="company-description" name="description" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="save-company-btn">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 회사 편집 모달 -->
+<div class="modal fade" id="edit-company-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="edit-company-modal-title">회사 정보 편집</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-company-form" method="post">
+                    <input type="hidden" id="edit-company-id" name="company_id">
+                    <div class="mb-3">
+                        <label for="edit-company-name" class="form-label">회사명 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit-company-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-company-industry" class="form-label">업종</label>
+                        <input type="text" class="form-control" id="edit-company-industry" name="industry">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-company-location" class="form-label">위치</label>
+                        <input type="text" class="form-control" id="edit-company-location" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-company-website" class="form-label">웹사이트</label>
+                        <input type="url" class="form-control" id="edit-company-website" name="website">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-company-description" class="form-label">설명</label>
+                        <textarea class="form-control" id="edit-company-description" name="description" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" id="delete-company-btn">
+                    <i class="bi bi-trash"></i> 삭제
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="update-company-btn">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 회사 저장 버튼 클릭 시
+    document.getElementById('save-company-btn').addEventListener('click', function() {
+        document.getElementById('add-company-form').submit();
+    });
+    
+    // 회사 목록 필터링 기능
+    function filterCompanies() {
+        const searchText = document.getElementById('search-company').value.toLowerCase();
+        const industryFilter = document.getElementById('industry-filter').value;
+        const locationFilter = document.getElementById('location-filter').value;
+        
+        const companies = document.querySelectorAll('.company-item');
+        
+        companies.forEach(function(company) {
+            const name = company.dataset.name.toLowerCase();
+            const industry = company.dataset.industry;
+            const location = company.dataset.location;
+            
+            const nameMatch = name.includes(searchText);
+            const industryMatch = !industryFilter || industry === industryFilter;
+            const locationMatch = !locationFilter || location === locationFilter;
+            
+            if (nameMatch && industryMatch && locationMatch) {
+                company.style.display = '';
+            } else {
+                company.style.display = 'none';
+            }
+        });
+    }
+    
+    // 검색 버튼 클릭 시
+    document.getElementById('search-btn').addEventListener('click', filterCompanies);
+    
+    // 검색어 입력 시 (Enter 키)
+    document.getElementById('search-company').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            filterCompanies();
+        }
+    });
+    
+    // 필터 변경 시
+    document.getElementById('industry-filter').addEventListener('change', filterCompanies);
+    document.getElementById('location-filter').addEventListener('change', filterCompanies);
+    
+    // 필터 초기화 버튼 클릭 시
+    document.getElementById('reset-filter-btn').addEventListener('click', function() {
+        document.getElementById('search-company').value = '';
+        document.getElementById('industry-filter').value = '';
+        document.getElementById('location-filter').value = '';
+        filterCompanies();
+    });
+    
+    // 회사 편집 버튼 클릭 시
+    const editButtons = document.querySelectorAll('.edit-company-btn');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const companyId = button.dataset.companyId;
+            
+            // 회사 정보 가져오기
+            fetch(`/api/companies/${companyId}`)
+                .then(response => {
+                console.log('Delete response status:', response.status);
+                return response.json();
+            })
+                .then(company => {
+                    // 모달에 회사 정보 채우기
+                    document.getElementById('edit-company-id').value = company.id;
+                    document.getElementById('edit-company-name').value = company.name;
+                    document.getElementById('edit-company-industry').value = company.industry || '';
+                    document.getElementById('edit-company-location').value = company.location || '';
+                    document.getElementById('edit-company-website').value = company.website || '';
+                    document.getElementById('edit-company-description').value = company.description || '';
+                    
+                    // 폼 액션 설정
+                    document.getElementById('edit-company-form').action = `/companies/companies/update/${companyId}`;
+                    
+                    // 모달 열기
+                    const modal = new bootstrap.Modal(document.getElementById('edit-company-modal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('회사 정보를 가져오는 중 오류가 발생했습니다.');
+                });
+        });
+    });
+    
+    // 회사 정보 업데이트 버튼 클릭 시
+    document.getElementById('update-company-btn').addEventListener('click', function() {
+        document.getElementById('edit-company-form').submit();
+    });
+    
+    // 회사 삭제 버튼 클릭 시
+    document.getElementById('delete-company-btn').addEventListener('click', function() {
+        const companyId = document.getElementById('edit-company-id').value;
+        console.log('Deleting company with ID:', companyId);
+        if (confirm('이 회사를 정말 삭제하시겠습니까? 연결된 채용 정보가 있으면 삭제할 수 없습니다.')) {
+            const deleteUrl = `/companies/companies/delete/${companyId}`;
+            console.log('Delete URL:', deleteUrl);
+            fetch(deleteUrl, {
+                method: 'POST'
+            })
+            .then(response => {
+                console.log('Delete response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Delete response data:', data);
+                if (data.success) {
+                    // 삭제 성공 시 페이지 새로고침
+                    location.reload();
+                } else {
+                    alert('회사 삭제 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('회사 삭제 중 오류가 발생했습니다.');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
